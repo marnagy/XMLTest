@@ -10,7 +10,7 @@ namespace XMLTest
 		static string filename = "students.xml";
 		static void Main(string[] args)
 		{
-			//WriteXML();
+			WriteXML();
 			ReadXML();
 		}
 
