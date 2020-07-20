@@ -12,6 +12,35 @@ namespace XMLTest
 		{
 			WriteXML();
 			ReadXML();
+			AddStudent();
+		}
+
+		private static void AddStudent()
+		{
+			XmlDocument doc = new XmlDocument();
+			doc.Load(filename);
+
+			XmlElement student = doc.CreateElement("foo");
+
+			XmlElement FirstName = doc.CreateElement("FirstName");
+			FirstName.InnerText = "John";
+
+			XmlElement LastName = doc.CreateElement("LastName");
+			LastName.InnerText = "Constantine";
+
+			XmlElement Age = doc.CreateElement("Age");
+			Age.InnerText = "24";
+
+			XmlElement Height = doc.CreateElement("Height");
+			Height.InnerText = "184.7";
+
+			student.AppendChild(FirstName);
+			student.AppendChild(LastName);
+			student.AppendChild(Age);
+			student.AppendChild(Height);
+
+			doc.DocumentElement.AppendChild(student);
+			doc.Save(filename);
 		}
 
 		private static void ReadXML()
@@ -23,16 +52,19 @@ namespace XMLTest
 
 			foreach (XmlNode childNode in Xdoc.DocumentElement.ChildNodes)
 			{
-				//Console.WriteLine(childNode.Name);
 				if (childNode.Name == "Student")
 				{
-
 					foreach (XmlNode item in childNode.ChildNodes)
 					{
 						Console.WriteLine($"{item.Name}: {item.InnerText}");
 					}
+					var children = childNode.ChildNodes;
+					var temp = new Student{ FirstName = children.Item(0).InnerText, LastName = children.Item(1).InnerText,
+						Age = int.Parse(children.Item(2).InnerText), Height = double.Parse(children.Item(3).InnerText)};
+					list.Add(temp);
 				}
-			} 
+			}
+			Console.WriteLine($"List length: {list.Count}");
 		}
 
 		private static void WriteXML()
