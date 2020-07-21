@@ -34,7 +34,9 @@ namespace XMLTest
 			client.IsBackground = false;
 			client.Start();
 		}
-
+		/// <summary>
+		/// Test for sending multiple objects instead of whole collection
+		/// </summary>
 		private static void RunClient()
 		{
 			List<Person> list;
