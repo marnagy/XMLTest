@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Sockets;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -12,6 +16,7 @@ namespace XMLTest
 	{
 		static string Xmlfilename = "students.xml";
 		static string Binfilename = "students.dat";
+		static int port = 2000;
 		static void Main(string[] args)
 		{
 			WriteXML();
@@ -20,6 +25,64 @@ namespace XMLTest
 
 			WriteBinary();
 			ReadBinary();
+
+			Thread server = new Thread(new ThreadStart(() => RunServer()));
+			server.IsBackground = true;
+			server.Start();
+
+			Thread client = new Thread(new ThreadStart(() => RunClient()));
+			client.IsBackground = false;
+			client.Start();
+		}
+
+		private static void RunClient()
+		{
+			List<Student> list;
+
+			using (TextReader tr = new StreamReader(Xmlfilename))
+			{
+				var serializer = new XmlSerializer(typeof(List<Student>));
+				list = (List<Student>)serializer.Deserialize(tr);
+			}
+
+			using (TcpClient client = new TcpClient("localhost", port))
+			using (Stream stream = new StreamReader(client.GetStream()).BaseStream)
+			{
+				var bf = new BinaryFormatter();
+				foreach (var stud in list)
+				{
+					bf.Serialize(stream, stud);
+				}
+			}
+
+		}
+
+		private static void RunServer()
+		{
+			TcpListener listener = new TcpListener(port);
+
+			listener.Start();
+			while (true)
+			{
+				using (TcpClient client = listener.AcceptTcpClient())
+				using (Stream stream = new StreamReader(client.GetStream()).BaseStream)
+				{
+					var bf = new BinaryFormatter();
+					Console.WriteLine("Server");
+					try
+					{
+						while (true)
+						{
+							var stud = (Student)bf.Deserialize(stream);
+							Console.WriteLine($"{stud.FirstName} {stud.LastName}");
+						}
+					}
+					catch (SerializationException)
+					{
+
+					}
+				}
+			}
 		}
 
 		private static void ReadBinary()
