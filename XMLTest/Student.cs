@@ -35,7 +35,7 @@ namespace XMLTest
 		//}
 		public Student(SerializationInfo info, StreamingContext context)
 		{
-			Type = 1;
+			Type = (int)info.GetValue("Type", typeof(int));
 			FirstName = (string)info.GetValue("FirstName", typeof(string));
 			LastName = (string)info.GetValue("LastName", typeof(string));
 			Age = (int)info.GetValue("Age", typeof(int));

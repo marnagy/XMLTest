@@ -19,8 +19,8 @@ namespace XMLTest
 		static int port = 2000;
 		static void Main(string[] args)
 		{
-			//WriteXML();
-			//ReadXML();
+			WriteXML();
+			ReadXML();
 			//AddStudent();
 
 			WriteBinary();
@@ -154,13 +154,13 @@ namespace XMLTest
 
 		private static void ReadXML()
 		{
-			List<Student> list;
+			List<Person> list;
 
-			XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<Student>));
+			XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<Person>));
 
 			using (TextReader tr = new StreamReader(Xmlfilename))
 			{
-				list = (List<Student>)xmlSerializer.Deserialize(tr);
+				list = (List<Person>)xmlSerializer.Deserialize(tr);
 			}
 
 			Console.WriteLine("XML");
@@ -173,11 +173,17 @@ namespace XMLTest
 		private static void WriteXML()
 		{
 			List<Person> list = new List<Person>();
+			//for (int i = 0; i < 5; i++)
+			//{
+			//	list.Add( new Student(
+			//		firstName: "Greg" + i, lastName: "Smith" + i,
+			//		age: (i*20 + 12) % 30, university: "UK"));
+			//}
 			for (int i = 0; i < 5; i++)
 			{
-				list.Add(new Student(
-					firstName: "Greg" + i, lastName: "Smith" + i,
-					age: (i*20 + 12) % 30, university: "UK"));
+				list.Add(new Child(
+					firstName: "Peter" + i, lastName: "Smith" + i,
+					age: (i * 20 + 12) % 30));
 			}
 
 			XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<Person>));

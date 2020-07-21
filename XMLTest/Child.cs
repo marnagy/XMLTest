@@ -6,8 +6,12 @@ using System.Text;
 namespace XMLTest
 {
 	[Serializable]
-	class Child : Person
+	public class Child : Person
 	{
+		public Child()
+		{
+
+		}
 		public Child(string firstName, string lastName, int age)
 		{
 			Type = 0;
@@ -24,6 +28,7 @@ namespace XMLTest
 		}
 		public Child(SerializationInfo info, StreamingContext context)
 		{
+			Type = (int)info.GetValue("Type", typeof(int));
 			FirstName = (string)info.GetValue("FirstName", typeof(string));
 			LastName = (string)info.GetValue("LastName", typeof(string));
 			Age = (int)info.GetValue("Age", typeof(int));
