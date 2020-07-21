@@ -52,16 +52,13 @@ namespace XMLTest
 
 			foreach (XmlNode childNode in Xdoc.DocumentElement.ChildNodes)
 			{
-				if (childNode.Name == "Student")
+				if (childNode.Name == Student.XMLElementName)
 				{
 					foreach (XmlNode item in childNode.ChildNodes)
 					{
 						Console.WriteLine($"{item.Name}: {item.InnerText}");
 					}
-					var children = childNode.ChildNodes;
-					var temp = new Student{ FirstName = children.Item(0).InnerText, LastName = children.Item(1).InnerText,
-						Age = int.Parse(children.Item(2).InnerText), Height = double.Parse(children.Item(3).InnerText)};
-					list.Add(temp);
+					list.Add( Student.FromXml(childNode) );
 				}
 			}
 			Console.WriteLine($"List length: {list.Count}");
@@ -86,14 +83,7 @@ namespace XMLTest
 
 			foreach (Student stud in list)
 			{
-				xmlWriter.WriteStartElement("Student");
-
-				xmlWriter.WriteElementString("FirstName", stud.FirstName);
-				xmlWriter.WriteElementString("LastName", stud.LastName);
-				xmlWriter.WriteElementString("Age", stud.Age.ToString());
-				xmlWriter.WriteElementString("Height", stud.Height.ToString());
-
-				xmlWriter.WriteEndElement();
+				stud.Write(xmlWriter);
 			}
 			xmlWriter.WriteEndElement();
 			xmlWriter.WriteEndDocument();
