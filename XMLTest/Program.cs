@@ -19,9 +19,9 @@ namespace XMLTest
 		static int port = 2000;
 		static void Main(string[] args)
 		{
-			WriteXML();
-			ReadXML();
-			AddStudent();
+			//WriteXML();
+			//ReadXML();
+			//AddStudent();
 
 			WriteBinary();
 			ReadBinary();
@@ -37,12 +37,12 @@ namespace XMLTest
 
 		private static void RunClient()
 		{
-			List<Student> list;
+			List<Person> list;
 
-			using (TextReader tr = new StreamReader(Xmlfilename))
+			using (Stream stream = new StreamReader(Binfilename).BaseStream)
 			{
-				var serializer = new XmlSerializer(typeof(List<Student>));
-				list = (List<Student>)serializer.Deserialize(tr);
+				var serializer = new BinaryFormatter();
+				list = (List<Person>)serializer.Deserialize(stream);
 			}
 
 			using (TcpClient client = new TcpClient("localhost", port))
@@ -73,8 +73,16 @@ namespace XMLTest
 					{
 						while (true)
 						{
-							var stud = (Student)bf.Deserialize(stream);
-							Console.WriteLine($"{stud.FirstName} {stud.LastName}");
+							var person = (Person)bf.Deserialize(stream);
+							var type = person.GetType();
+							if (type == typeof(Student))
+							{
+								Console.WriteLine($"Type Student -> {person.FirstName} {person.LastName}");
+							}
+							else if (type == typeof(Child))
+							{
+								Console.WriteLine($"Type Child -> {person.FirstName} {person.LastName}");
+							}
 						}
 					}
 					catch (SerializationException)
@@ -87,28 +95,34 @@ namespace XMLTest
 
 		private static void ReadBinary()
 		{
-			List<Student> list;
+			List<Person> list;
 			using( Stream stream = File.Open(Binfilename, FileMode.Open))
 			{
 				var bf = new BinaryFormatter();
-				list = (List<Student>)bf.Deserialize(stream);
+				list = (List<Person>)bf.Deserialize(stream);
 			}
 
 			Console.WriteLine("Binary");
-			foreach (var stud in list)
+			foreach (var person in list)
 			{
-				Console.WriteLine(stud.FirstName);
+				Console.WriteLine($"Type {person.GetType()}-{person.Type} -> {person.FirstName} {person.LastName}");
 			}
 		}
 
 		private static void WriteBinary()
 		{
-			List<Student> list = new List<Student>();
+			List<Person> list = new List<Person>();
 			for (int i = 0; i < 5; i++)
 			{
-				list.Add(new Student {
-					FirstName = "Greg" + i, LastName = "Smith" + i,
-					Age = (i*20 + 12) % 30, Height = i * 50 + 0.5});
+				list.Add(new Student(
+					firstName: "Greg" + i, lastName: "Smith" + i,
+					age: (i*20 + 12) % 30, university: "UK"));
+			}
+			for (int i = 0; i < 5; i++)
+			{
+				list.Add(new Child(
+					firstName: "Peter" + i, lastName: "Smith" + i,
+					age: (i*20 + 12) % 30));
 			}
 
 			using (Stream stream = File.Open(Binfilename, FileMode.Create))
@@ -119,17 +133,16 @@ namespace XMLTest
 
 		private static void AddStudent()
 		{
-			List<Student> list;
+			List<Person> list;
 
-			XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<Student>));
+			XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<Person>));
 
 			using (TextReader tr = new StreamReader(Xmlfilename))
 			{
-				list = (List<Student>)xmlSerializer.Deserialize(tr);
+				list = (List<Person>)xmlSerializer.Deserialize(tr);
 			}
 
-			list.Add(new Student { FirstName = "John", LastName = "Constantine",
-				Age = 24, Height = 184.7});
+			list.Add(new Student("John", "Constantine", 24, "UK"));
 
 			using (TextWriter tw = new StreamWriter(Xmlfilename))
 			{
@@ -157,15 +170,15 @@ namespace XMLTest
 
 		private static void WriteXML()
 		{
-			List<Student> list = new List<Student>();
+			List<Person> list = new List<Person>();
 			for (int i = 0; i < 5; i++)
 			{
-				list.Add(new Student {
-					FirstName = "Greg" + i, LastName = "Smith" + i,
-					Age = (i*20 + 12) % 30, Height = i * 50 + 0.5});
+				list.Add(new Student(
+					firstName: "Greg" + i, lastName: "Smith" + i,
+					age: (i*20 + 12) % 30, university: "UK"));
 			}
 
-			XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<Student>));
+			XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<Person>));
 
 			using (TextWriter tw = new StreamWriter(Xmlfilename))
 			{
