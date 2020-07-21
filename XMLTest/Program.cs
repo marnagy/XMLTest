@@ -1,67 +1,95 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Xml;
+using System.Xml.Serialization;
 
 namespace XMLTest
 {
 	class Program
 	{
-		static string filename = "students.xml";
+		static string Xmlfilename = "students.xml";
+		static string Binfilename = "students.dat";
 		static void Main(string[] args)
 		{
 			WriteXML();
 			ReadXML();
 			AddStudent();
+
+			WriteBinary();
+			ReadBinary();
+		}
+
+		private static void ReadBinary()
+		{
+			List<Student> list;
+			using( Stream stream = File.Open(Binfilename, FileMode.Open))
+			{
+				var bf = new BinaryFormatter();
+				list = (List<Student>)bf.Deserialize(stream);
+			}
+
+			Console.WriteLine("Binary");
+			foreach (var stud in list)
+			{
+				Console.WriteLine(stud.FirstName);
+			}
+		}
+
+		private static void WriteBinary()
+		{
+			List<Student> list = new List<Student>();
+			for (int i = 0; i < 5; i++)
+			{
+				list.Add(new Student {
+					FirstName = "Greg" + i, LastName = "Smith" + i,
+					Age = (i*20 + 12) % 30, Height = i * 50 + 0.5});
+			}
+
+			using (Stream stream = File.Open(Binfilename, FileMode.Create))
+			{
+				new BinaryFormatter().Serialize(stream, list);
+			}
 		}
 
 		private static void AddStudent()
 		{
-			XmlDocument doc = new XmlDocument();
-			doc.Load(filename);
+			List<Student> list;
 
-			XmlElement student = doc.CreateElement("foo");
+			XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<Student>));
 
-			XmlElement FirstName = doc.CreateElement("FirstName");
-			FirstName.InnerText = "John";
+			using (TextReader tr = new StreamReader(Xmlfilename))
+			{
+				list = (List<Student>)xmlSerializer.Deserialize(tr);
+			}
 
-			XmlElement LastName = doc.CreateElement("LastName");
-			LastName.InnerText = "Constantine";
+			list.Add(new Student { FirstName = "John", LastName = "Constantine",
+				Age = 24, Height = 184.7});
 
-			XmlElement Age = doc.CreateElement("Age");
-			Age.InnerText = "24";
-
-			XmlElement Height = doc.CreateElement("Height");
-			Height.InnerText = "184.7";
-
-			student.AppendChild(FirstName);
-			student.AppendChild(LastName);
-			student.AppendChild(Age);
-			student.AppendChild(Height);
-
-			doc.DocumentElement.AppendChild(student);
-			doc.Save(filename);
+			using (TextWriter tw = new StreamWriter(Xmlfilename))
+			{
+				xmlSerializer.Serialize(tw, list);
+			}
 		}
 
 		private static void ReadXML()
 		{
-			List<Student> list = new List<Student>();
+			List<Student> list;
 
-			XmlDocument Xdoc = new XmlDocument();
-			Xdoc.Load(filename);
+			XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<Student>));
 
-			foreach (XmlNode childNode in Xdoc.DocumentElement.ChildNodes)
+			using (TextReader tr = new StreamReader(Xmlfilename))
 			{
-				if (childNode.Name == Student.XMLElementName)
-				{
-					foreach (XmlNode item in childNode.ChildNodes)
-					{
-						Console.WriteLine($"{item.Name}: {item.InnerText}");
-					}
-					list.Add( Student.FromXml(childNode) );
-				}
+				list = (List<Student>)xmlSerializer.Deserialize(tr);
 			}
-			Console.WriteLine($"List length: {list.Count}");
+
+			Console.WriteLine("XML");
+			foreach (var stud in list)
+			{
+				Console.WriteLine(stud.FirstName);
+			}
 		}
 
 		private static void WriteXML()
@@ -74,20 +102,12 @@ namespace XMLTest
 					Age = (i*20 + 12) % 30, Height = i * 50 + 0.5});
 			}
 
-			XmlTextWriter xmlWriter = new XmlTextWriter(filename, Encoding.UTF8);
+			XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<Student>));
 
-			xmlWriter.Formatting = Formatting.Indented;
-			xmlWriter.WriteStartDocument();
-
-			xmlWriter.WriteStartElement("Students");
-
-			foreach (Student stud in list)
+			using (TextWriter tw = new StreamWriter(Xmlfilename))
 			{
-				stud.Write(xmlWriter);
+				xmlSerializer.Serialize(tw, list);
 			}
-			xmlWriter.WriteEndElement();
-			xmlWriter.WriteEndDocument();
-			xmlWriter.Close();
 		}
 	}
 }

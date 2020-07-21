@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
 
 namespace XMLTest
-{
-	public struct Student : IXMLWriteable
+{	[Serializable]
+	public struct Student : ISerializable
 	{
 		public const string XMLElementName = "Student";
 
@@ -38,6 +39,21 @@ namespace XMLTest
 			{
 				throw new ArgumentException("Given node is not a student node.");
 			}
+		}
+
+		public void GetObjectData(SerializationInfo info, StreamingContext context)
+		{
+			info.AddValue("FirstName", FirstName);
+			info.AddValue("LastName", LastName);
+			info.AddValue("Age", Age);
+			info.AddValue("Height", Height);
+		}
+		public Student(SerializationInfo info, StreamingContext context)
+		{
+			FirstName = (string)info.GetValue("FirstName", typeof(string));
+			LastName = (string)info.GetValue("LastName", typeof(string));
+			Age = (int)info.GetValue("Age", typeof(int));
+			Height = (double)info.GetValue("Height", typeof(double));
 		}
 	}
 }
