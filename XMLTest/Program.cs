@@ -10,17 +10,21 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 
+
+
 namespace XMLTest
 {
+	[XmlInclude(typeof(Student))]
+	[XmlInclude(typeof(Child))]
 	class Program
 	{
 		static string Xmlfilename = "students.xml";
 		static string Binfilename = "students.dat";
-		static int port = 2000;
-		static void Main(string[] args)
+		const int port = 2000;
+		static void Main(string[] _)
 		{
-			WriteXML();
-			ReadXML();
+			//WriteXML();
+			//ReadXML();
 			//AddStudent();
 
 			WriteBinary();
@@ -28,10 +32,11 @@ namespace XMLTest
 
 			Thread server = new Thread(new ThreadStart(() => RunServer()));
 			server.IsBackground = true;
-			server.Start();
 
 			Thread client = new Thread(new ThreadStart(() => RunClient()));
 			client.IsBackground = false;
+
+			server.Start();
 			client.Start();
 		}
 		/// <summary>
@@ -40,20 +45,19 @@ namespace XMLTest
 		private static void RunClient()
 		{
 			List<Person> list;
-
+			var serializer = new BinaryFormatter();
 			using (Stream stream = new StreamReader(Binfilename).BaseStream)
 			{
-				var serializer = new BinaryFormatter();
 				list = (List<Person>)serializer.Deserialize(stream);
 			}
 
 			using (TcpClient client = new TcpClient("localhost", port))
 			using (Stream stream = new StreamReader(client.GetStream()).BaseStream)
 			{
-				var bf = new BinaryFormatter();
+				//var bf = new BinaryFormatter();
 				foreach (var stud in list)
 				{
-					bf.Serialize(stream, stud);
+					serializer.Serialize(stream, stud);
 				}
 			}
 
@@ -107,7 +111,7 @@ namespace XMLTest
 			Console.WriteLine("Binary");
 			foreach (var person in list)
 			{
-				Console.WriteLine($"Type {person.GetType()}-{person.Type} -> {person.FirstName} {person.LastName}");
+				Console.WriteLine($"Type {person.GetType()} -> {person.FirstName} {person.LastName}");
 			}
 		}
 
@@ -117,13 +121,13 @@ namespace XMLTest
 			for (int i = 0; i < 5; i++)
 			{
 				list.Add(new Student(
-					firstName: "Greg" + i, lastName: "Smith" + i,
+					firstName: "Grég" + i, lastName: "Smíth" + i,
 					age: (i*20 + 12) % 30, university: "UK"));
 			}
 			for (int i = 0; i < 5; i++)
 			{
 				list.Add(new Child(
-					firstName: "Peter" + i, lastName: "Smith" + i,
+					firstName: "Péťér" + i, lastName: "Smith" + i,
 					age: (i*20 + 12) % 30));
 			}
 
@@ -169,16 +173,16 @@ namespace XMLTest
 				Console.WriteLine(stud.FirstName);
 			}
 		}
-
+		
 		private static void WriteXML()
 		{
 			List<Person> list = new List<Person>();
-			//for (int i = 0; i < 5; i++)
-			//{
-			//	list.Add( new Student(
-			//		firstName: "Greg" + i, lastName: "Smith" + i,
-			//		age: (i*20 + 12) % 30, university: "UK"));
-			//}
+			for (int i = 0; i < 5; i++)
+			{
+				list.Add(new Student(
+					firstName: "Greg" + i, lastName: "Smith" + i,
+					age: (i * 20 + 12) % 30, university: "UK"));
+			}
 			for (int i = 0; i < 5; i++)
 			{
 				list.Add(new Child(
